@@ -793,8 +793,8 @@ class _AtmospherePainter extends CustomPainter {
           [
             const Color(0xffedf1fb),
             const Color(0xffdce4f5),
-            const Color(0xff8393c5).withValues(alpha: .62),
-            const Color(0xff17234a).withValues(alpha: .08),
+            const Color(0xff6178bd).withValues(alpha: .84),
+            const Color(0xff17234a).withValues(alpha: .38),
           ],
           const [0, .58, .88, 1],
         ),
@@ -805,7 +805,7 @@ class _AtmospherePainter extends CustomPainter {
         ..shader = ui.Gradient.radial(
           Offset(size.width * .96, size.height * .06),
           size.width * .62,
-          [const Color(0xff28c7e8).withValues(alpha: .30), Colors.transparent],
+          [const Color(0xff12c9ee).withValues(alpha: .72), Colors.transparent],
         ),
     );
     canvas.drawRect(
@@ -814,7 +814,7 @@ class _AtmospherePainter extends CustomPainter {
         ..shader = ui.Gradient.radial(
           Offset(size.width * .02, size.height * .91),
           size.width * .72,
-          [const Color(0xff8761e9).withValues(alpha: .26), Colors.transparent],
+          [const Color(0xff8056ef).withValues(alpha: .58), Colors.transparent],
         ),
     );
 
@@ -822,11 +822,13 @@ class _AtmospherePainter extends CustomPainter {
     final track = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1
-      ..color = const Color(0xff5b6fae).withValues(alpha: .24);
+      ..strokeWidth = 1.4
+      ..color = const Color(0xff455a9c).withValues(alpha: .58);
     final fineTrack = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = .7
-      ..color = const Color(0xff36c6e3).withValues(alpha: .26);
+      ..strokeWidth = 1
+      ..color = const Color(0xff16aeca).withValues(alpha: .62);
     final upperOrbit = Rect.fromCenter(
       center: Offset(size.width * 1.02, size.height * .10),
       width: size.width * .74,
@@ -845,8 +847,8 @@ class _AtmospherePainter extends CustomPainter {
     canvas.drawArc(lowerOrbit.deflate(14), 5.18, 1.22, false, fineTrack);
 
     final gridPaint = Paint()
-      ..color = const Color(0xff465b98).withValues(alpha: .13)
-      ..strokeWidth = .7;
+      ..color = const Color(0xff334983).withValues(alpha: .26)
+      ..strokeWidth = .8;
     final gridOrigin = Offset(size.width * .86, size.height * .17);
     for (var i = 0; i < 5; i++) {
       final x = gridOrigin.dx + i * 14.0;
@@ -864,13 +866,13 @@ class _AtmospherePainter extends CustomPainter {
     }
 
     final nodePaint = Paint()
-      ..color = const Color(0xff22b9d8).withValues(alpha: .62);
+      ..color = const Color(0xff04b8d9).withValues(alpha: .92);
     for (final point in [
       Offset(size.width * .79, size.height * .10),
       Offset(size.width * .92, size.height * .20),
       Offset(size.width * .11, size.height * .84),
     ]) {
-      canvas.drawCircle(point, 2.2, nodePaint);
+      canvas.drawCircle(point, 3, nodePaint);
       canvas.drawCircle(
         point,
         6,
