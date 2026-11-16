@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -312,140 +313,150 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: _canvas,
-    body: SafeArea(
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const _Brand(),
-                const SizedBox(height: 58),
-                Text(
-                  _signup ? 'Create account' : 'Sign in',
-                  style: const TextStyle(
-                    color: _ink,
-                    fontSize: 36,
-                    height: 1.08,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -1.3,
+    body: LiquidStage(
+      child: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _Brand(),
+                  const SizedBox(height: 58),
+                  Text(
+                    _signup ? 'Create account' : 'Sign in',
+                    style: const TextStyle(
+                      color: _ink,
+                      fontSize: 36,
+                      height: 1.08,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -1.3,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  _signup
-                      ? 'Set up your cru profile.'
-                      : 'Manage your cru profile.',
-                  style: const TextStyle(
-                    color: _muted,
-                    fontSize: 15,
-                    height: 1.4,
+                  const SizedBox(height: 10),
+                  Text(
+                    _signup
+                        ? 'Set up your cru profile.'
+                        : 'Manage your cru profile.',
+                    style: const TextStyle(
+                      color: _muted,
+                      fontSize: 15,
+                      height: 1.4,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 34),
-                Form(
-                  key: _form,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (_signup) ...[
+                  const SizedBox(height: 34),
+                  Form(
+                    key: _form,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (_signup) ...[
+                          _Field(
+                            controller: _name,
+                            label: 'Username',
+                            validator: (value) =>
+                                (value == null || value.trim().length < 2)
+                                ? 'Enter at least 2 characters.'
+                                : null,
+                          ),
+                          const SizedBox(height: 18),
+                        ],
                         _Field(
-                          controller: _name,
-                          label: 'Username',
+                          controller: _email,
+                          label: 'Email address',
+                          keyboardType: TextInputType.emailAddress,
                           validator: (value) =>
-                              (value == null || value.trim().length < 2)
-                              ? 'Enter at least 2 characters.'
+                              (value == null ||
+                                  !value.contains('@') ||
+                                  !value.contains('.'))
+                              ? 'Enter a valid email address.'
                               : null,
                         ),
                         const SizedBox(height: 18),
-                      ],
-                      _Field(
-                        controller: _email,
-                        label: 'Email address',
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) =>
-                            (value == null ||
-                                !value.contains('@') ||
-                                !value.contains('.'))
-                            ? 'Enter a valid email address.'
-                            : null,
-                      ),
-                      const SizedBox(height: 18),
-                      _Field(
-                        controller: _password,
-                        label: 'Password',
-                        obscure: !_showPassword,
-                        suffix: IconButton(
-                          onPressed: () =>
-                              setState(() => _showPassword = !_showPassword),
-                          icon: Icon(
-                            _showPassword
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            size: 19,
-                            color: _muted,
-                          ),
-                        ),
-                        validator: (value) =>
-                            (value == null || value.length < 6)
-                            ? 'Use at least 6 characters.'
-                            : null,
-                      ),
-                      if (_error != null) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          _error!,
-                          style: const TextStyle(color: _danger, fontSize: 13),
-                        ),
-                      ],
-                      if (_success != null) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          _success!,
-                          style: const TextStyle(
-                            color: Color(0xff367258),
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 26),
-                      _PrimaryButton(
-                        label: _signup ? 'Create account' : 'Log in',
-                        onPressed: _submit,
-                        busy: _busy,
-                      ),
-                      const SizedBox(height: 24),
-                      Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(
-                            _signup ? 'Already registered? ' : 'New to cru? ',
-                            style: const TextStyle(color: _muted, fontSize: 14),
-                          ),
-                          TextButton(
-                            onPressed: () => setState(() {
-                              _signup = !_signup;
-                              _error = null;
-                              _success = null;
-                            }),
-                            style: TextButton.styleFrom(
-                              foregroundColor: _accent,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                              ),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        _Field(
+                          controller: _password,
+                          label: 'Password',
+                          obscure: !_showPassword,
+                          suffix: IconButton(
+                            onPressed: () =>
+                                setState(() => _showPassword = !_showPassword),
+                            icon: Icon(
+                              _showPassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              size: 19,
+                              color: _muted,
                             ),
-                            child: Text(_signup ? 'Log in' : 'Create account'),
+                          ),
+                          validator: (value) =>
+                              (value == null || value.length < 6)
+                              ? 'Use at least 6 characters.'
+                              : null,
+                        ),
+                        if (_error != null) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            _error!,
+                            style: const TextStyle(
+                              color: _danger,
+                              fontSize: 13,
+                            ),
                           ),
                         ],
-                      ),
-                    ],
+                        if (_success != null) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            _success!,
+                            style: const TextStyle(
+                              color: Color(0xff367258),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 26),
+                        _PrimaryButton(
+                          label: _signup ? 'Create account' : 'Log in',
+                          onPressed: _submit,
+                          busy: _busy,
+                        ),
+                        const SizedBox(height: 24),
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              _signup ? 'Already registered? ' : 'New to cru? ',
+                              style: const TextStyle(
+                                color: _muted,
+                                fontSize: 14,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => setState(() {
+                                _signup = !_signup;
+                                _error = null;
+                                _success = null;
+                              }),
+                              style: TextButton.styleFrom(
+                                foregroundColor: _accent,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                _signup ? 'Log in' : 'Create account',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -513,193 +524,195 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _canvas,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _Brand(),
-                  const SizedBox(height: 54),
-                  Row(
-                    children: [
-                      Container(
-                        width: 54,
-                        height: 54,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: const Color(0xffe1e6f4),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          widget.user.username[0].toUpperCase(),
-                          style: const TextStyle(
-                            color: _accent,
-                            fontSize: 23,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.user.username,
-                              style: const TextStyle(
-                                color: _ink,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
+      body: LiquidStage(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _Brand(),
+                    const SizedBox(height: 54),
+                    Row(
+                      children: [
+                        LiquidGlass(
+                          radius: 16,
+                          child: SizedBox(
+                            width: 54,
+                            height: 54,
+                            child: Center(
+                              child: Text(
+                                widget.user.username[0].toUpperCase(),
+                                style: const TextStyle(
+                                  color: _accent,
+                                  fontSize: 23,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 3),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.user.username,
+                                style: const TextStyle(
+                                  color: _ink,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                widget.user.email,
+                                style: const TextStyle(
+                                  color: _muted,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 40),
+                    Text(
+                      'Account details',
+                      style: const TextStyle(
+                        color: _ink,
+                        fontSize: 29,
+                        height: 1.1,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -.8,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _editing
+                          ? 'Update your login details.'
+                          : 'Your profile information.',
+                      style: const TextStyle(color: _muted, fontSize: 15),
+                    ),
+                    const SizedBox(height: 30),
+                    Form(
+                      key: _form,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _Field(
+                            controller: _name,
+                            label: 'Username',
+                            enabled: _editing,
+                            validator: (value) =>
+                                (value == null || value.trim().length < 2)
+                                ? 'Enter at least 2 characters.'
+                                : null,
+                          ),
+                          const SizedBox(height: 18),
+                          _Field(
+                            controller: _email,
+                            label: 'Email address',
+                            enabled: _editing,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) =>
+                                (value == null ||
+                                    !value.contains('@') ||
+                                    !value.contains('.'))
+                                ? 'Enter a valid email address.'
+                                : null,
+                          ),
+                          if (_editing) ...[
+                            const SizedBox(height: 18),
+                            _Field(
+                              controller: _password,
+                              label: 'New password (optional)',
+                              obscure: true,
+                              validator: (value) =>
+                                  (value != null &&
+                                      value.isNotEmpty &&
+                                      value.length < 6)
+                                  ? 'Use at least 6 characters.'
+                                  : null,
+                            ),
+                          ],
+                          if (_notice != null) ...[
+                            const SizedBox(height: 14),
                             Text(
-                              widget.user.email,
-                              style: const TextStyle(
-                                color: _muted,
-                                fontSize: 14,
+                              _notice!,
+                              style: TextStyle(
+                                color: _notice!.contains('up to date')
+                                    ? const Color(0xff367258)
+                                    : _danger,
+                                fontSize: 13,
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 40),
-                  Text(
-                    'Account details',
-                    style: const TextStyle(
-                      color: _ink,
-                      fontSize: 29,
-                      height: 1.1,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -.8,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _editing
-                        ? 'Update your login details.'
-                        : 'Your profile information.',
-                    style: const TextStyle(color: _muted, fontSize: 15),
-                  ),
-                  const SizedBox(height: 30),
-                  Form(
-                    key: _form,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _Field(
-                          controller: _name,
-                          label: 'Username',
-                          enabled: _editing,
-                          validator: (value) =>
-                              (value == null || value.trim().length < 2)
-                              ? 'Enter at least 2 characters.'
-                              : null,
-                        ),
-                        const SizedBox(height: 18),
-                        _Field(
-                          controller: _email,
-                          label: 'Email address',
-                          enabled: _editing,
-                          keyboardType: TextInputType.emailAddress,
-                          validator: (value) =>
-                              (value == null ||
-                                  !value.contains('@') ||
-                                  !value.contains('.'))
-                              ? 'Enter a valid email address.'
-                              : null,
-                        ),
-                        if (_editing) ...[
-                          const SizedBox(height: 18),
-                          _Field(
-                            controller: _password,
-                            label: 'New password (optional)',
-                            obscure: true,
-                            validator: (value) =>
-                                (value != null &&
-                                    value.isNotEmpty &&
-                                    value.length < 6)
-                                ? 'Use at least 6 characters.'
-                                : null,
-                          ),
-                        ],
-                        if (_notice != null) ...[
-                          const SizedBox(height: 14),
-                          Text(
-                            _notice!,
-                            style: TextStyle(
-                              color: _notice!.contains('up to date')
-                                  ? const Color(0xff367258)
-                                  : _danger,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 26),
-                        if (_editing)
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _PrimaryButton(
-                                  label: 'Save changes',
-                                  icon: Icons.check_rounded,
-                                  onPressed: _save,
-                                  busy: _saving,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              OutlinedButton(
-                                onPressed: () => setState(() {
-                                  _editing = false;
-                                  _name.text = widget.user.username;
-                                  _email.text = widget.user.email;
-                                  _password.clear();
-                                }),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: _ink,
-                                  side: const BorderSide(color: _line),
-                                  minimumSize: const Size(52, 54),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                          const SizedBox(height: 26),
+                          if (_editing)
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _PrimaryButton(
+                                    label: 'Save changes',
+                                    icon: Icons.check_rounded,
+                                    onPressed: _save,
+                                    busy: _saving,
                                   ),
                                 ),
-                                child: const Icon(Icons.close_rounded),
-                              ),
-                            ],
-                          )
-                        else
-                          _PrimaryButton(
-                            label: 'Edit account',
-                            icon: Icons.edit_outlined,
-                            onPressed: () => setState(() {
-                              _editing = true;
-                              _notice = null;
-                            }),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  const Divider(height: 1, color: _line),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      onPressed: widget.onSignOut,
-                      icon: const Icon(Icons.logout_rounded, size: 17),
-                      label: const Text('Log out'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: _muted,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                const SizedBox(width: 12),
+                                OutlinedButton(
+                                  onPressed: () => setState(() {
+                                    _editing = false;
+                                    _name.text = widget.user.username;
+                                    _email.text = widget.user.email;
+                                    _password.clear();
+                                  }),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: _ink,
+                                    side: const BorderSide(color: _line),
+                                    minimumSize: const Size(52, 54),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Icon(Icons.close_rounded),
+                                ),
+                              ],
+                            )
+                          else
+                            _PrimaryButton(
+                              label: 'Edit account',
+                              icon: Icons.edit_outlined,
+                              onPressed: () => setState(() {
+                                _editing = true;
+                                _notice = null;
+                              }),
+                            ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 30),
+                    const Divider(height: 1, color: _line),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: widget.onSignOut,
+                        icon: const Icon(Icons.logout_rounded, size: 17),
+                        label: const Text('Log out'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: _muted,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -715,21 +728,21 @@ class _Brand extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     mainAxisAlignment: MainAxisAlignment.start,
     children: [
-      Container(
-        width: 34,
-        height: 34,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: _accent,
-        ),
-        child: const Text(
-          'c',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            height: 1,
-            fontWeight: FontWeight.w700,
+      LiquidGlass(
+        radius: 10,
+        child: SizedBox(
+          width: 34,
+          height: 34,
+          child: Center(
+            child: Text(
+              'c',
+              style: const TextStyle(
+                color: _accent,
+                fontSize: 22,
+                height: 1,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ),
       ),
@@ -745,6 +758,202 @@ class _Brand extends StatelessWidget {
       ),
     ],
   );
+}
+
+class LiquidStage extends StatelessWidget {
+  const LiquidStage({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    fit: StackFit.expand,
+    children: [
+      const Positioned.fill(child: CustomPaint(painter: _AtmospherePainter())),
+      child,
+    ],
+  );
+}
+
+class _AtmospherePainter extends CustomPainter {
+  const _AtmospherePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final bounds = Offset.zero & size;
+    canvas.drawColor(_canvas, BlendMode.src);
+    canvas.drawRect(
+      bounds,
+      Paint()
+        ..shader = ui.Gradient.radial(
+          Offset(size.width * .88, size.height * .06),
+          size.width * .8,
+          [const Color(0xffe5eaf6), _canvas.withValues(alpha: 0)],
+        ),
+    );
+
+    final contourPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..color = const Color(0xff8392b4).withValues(alpha: .10);
+    for (var index = 0; index < 3; index++) {
+      final inset = index * 17.0;
+      final path = Path()
+        ..moveTo(size.width * .62 + inset, -18)
+        ..cubicTo(
+          size.width * .45 + inset,
+          size.height * .18,
+          size.width * .78 - inset,
+          size.height * .2,
+          size.width + 24,
+          size.height * .02 + inset,
+        );
+      canvas.drawPath(path, contourPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _AtmospherePainter oldDelegate) => false;
+}
+
+class LiquidGlass extends StatefulWidget {
+  const LiquidGlass({super.key, required this.child, this.radius = 16});
+
+  final Widget child;
+  final double radius;
+
+  static final Future<ui.FragmentProgram> _program =
+      ui.FragmentProgram.fromAsset('shaders/liquid_glass.frag');
+
+  @override
+  State<LiquidGlass> createState() => _LiquidGlassState();
+}
+
+class _LiquidGlassState extends State<LiquidGlass> {
+  ui.FragmentShader? _shader;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadShader();
+  }
+
+  Future<void> _loadShader() async {
+    if (!ui.ImageFilter.isShaderFilterSupported) return;
+    try {
+      final program = await LiquidGlass._program;
+      final shader = program.fragmentShader();
+      shader.setFloat(2, 4.5);
+      shader.setFloat(3, 0.65);
+      if (!mounted) {
+        shader.dispose();
+        return;
+      }
+      setState(() => _shader = shader);
+    } catch (_) {
+      // Keep the light refraction fallback on unsupported rendering backends.
+    }
+  }
+
+  @override
+  void dispose() {
+    _shader?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final shader = _shader;
+    final filter = shader == null
+        ? ui.ImageFilter.blur(sigmaX: 1.2, sigmaY: 1.2)
+        : ui.ImageFilter.shader(shader);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(widget.radius),
+      child: Stack(
+        fit: StackFit.passthrough,
+        children: [
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: filter,
+              child: const SizedBox.expand(),
+            ),
+          ),
+          CustomPaint(
+            painter: _LiquidEdgePainter(radius: widget.radius),
+            child: widget.child,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LiquidEdgePainter extends CustomPainter {
+  const _LiquidEdgePainter({required this.radius});
+  final double radius;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final shape = RRect.fromRectAndRadius(rect, Radius.circular(radius));
+
+    canvas.drawRRect(
+      shape,
+      Paint()..color = const Color(0xfff7f9ff).withValues(alpha: .18),
+    );
+    canvas.drawRRect(
+      shape,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1
+        ..color = Colors.white.withValues(alpha: .72),
+    );
+
+    final highlight = Path()
+      ..moveTo(radius, 1)
+      ..cubicTo(
+        size.width * .28,
+        1,
+        size.width * .5,
+        1.5,
+        size.width * .72,
+        2.2,
+      );
+    canvas.drawPath(
+      highlight,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2
+        ..shader = ui.Gradient.linear(
+          Offset(radius, 1),
+          Offset(size.width * .78, 2),
+          [
+            Colors.white.withValues(alpha: .9),
+            Colors.white.withValues(alpha: .08),
+          ],
+        ),
+    );
+
+    final lowerEdge = Path()
+      ..moveTo(radius, size.height - 1)
+      ..quadraticBezierTo(
+        size.width * .5,
+        size.height + .5,
+        size.width - radius,
+        size.height - 1,
+      );
+    canvas.drawPath(
+      lowerEdge,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1
+        ..color = const Color(0xff586783).withValues(alpha: .22),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _LiquidEdgePainter oldDelegate) =>
+      oldDelegate.radius != radius;
 }
 
 class _Field extends StatelessWidget {
@@ -816,43 +1025,49 @@ class _PrimaryButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool busy;
   @override
-  Widget build(BuildContext context) => SizedBox(
-    height: 56,
-    width: double.infinity,
-    child: ElevatedButton(
-      onPressed: busy ? null : onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: _ink,
-        foregroundColor: Colors.white,
-        disabledBackgroundColor: _ink.withValues(alpha: .55),
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      child: busy
-          ? const SizedBox(
-              width: 19,
-              height: 19,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (icon != null) ...[
-                  const SizedBox(width: 8),
-                  Icon(icon, size: 18),
-                ],
-              ],
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    child: LiquidGlass(
+      radius: 14,
+      child: SizedBox(
+        height: 56,
+        width: double.infinity,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: busy ? null : onPressed,
+            borderRadius: BorderRadius.circular(14),
+            child: Center(
+              child: busy
+                  ? const SizedBox(
+                      width: 19,
+                      height: 19,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: _accent,
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          label,
+                          style: const TextStyle(
+                            color: _ink,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        if (icon != null) ...[
+                          const SizedBox(width: 8),
+                          Icon(icon, size: 18, color: _accent),
+                        ],
+                      ],
+                    ),
             ),
+          ),
+        ),
+      ),
     ),
   );
 }
