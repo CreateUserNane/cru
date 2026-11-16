@@ -780,34 +780,105 @@ class _AtmospherePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final bounds = Offset.zero & size;
-    canvas.drawColor(_canvas, BlendMode.src);
+    canvas.drawColor(const Color(0xff090e21), BlendMode.src);
+
+    // A luminous navigation field keeps the center legible while color gathers
+    // toward the edges like a lit instrument chamber.
     canvas.drawRect(
       bounds,
       Paint()
         ..shader = ui.Gradient.radial(
-          Offset(size.width * .88, size.height * .06),
-          size.width * .8,
-          [const Color(0xffe5eaf6), _canvas.withValues(alpha: 0)],
+          Offset(size.width * .5, size.height * .48),
+          size.height * .67,
+          [
+            const Color(0xffedf1fb),
+            const Color(0xffdce4f5),
+            const Color(0xff8393c5).withValues(alpha: .62),
+            const Color(0xff17234a).withValues(alpha: .08),
+          ],
+          const [0, .58, .88, 1],
+        ),
+    );
+    canvas.drawRect(
+      bounds,
+      Paint()
+        ..shader = ui.Gradient.radial(
+          Offset(size.width * .96, size.height * .06),
+          size.width * .62,
+          [const Color(0xff28c7e8).withValues(alpha: .30), Colors.transparent],
+        ),
+    );
+    canvas.drawRect(
+      bounds,
+      Paint()
+        ..shader = ui.Gradient.radial(
+          Offset(size.width * .02, size.height * .91),
+          size.width * .72,
+          [const Color(0xff8761e9).withValues(alpha: .26), Colors.transparent],
         ),
     );
 
-    final contourPaint = Paint()
+    // Instrument-grid arcs and orbital tracks frame the quiet form area.
+    final track = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1
-      ..color = const Color(0xff8392b4).withValues(alpha: .10);
-    for (var index = 0; index < 3; index++) {
-      final inset = index * 17.0;
-      final path = Path()
-        ..moveTo(size.width * .62 + inset, -18)
-        ..cubicTo(
-          size.width * .45 + inset,
-          size.height * .18,
-          size.width * .78 - inset,
-          size.height * .2,
-          size.width + 24,
-          size.height * .02 + inset,
-        );
-      canvas.drawPath(path, contourPaint);
+      ..color = const Color(0xff5b6fae).withValues(alpha: .24);
+    final fineTrack = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = .7
+      ..color = const Color(0xff36c6e3).withValues(alpha: .26);
+    final upperOrbit = Rect.fromCenter(
+      center: Offset(size.width * 1.02, size.height * .10),
+      width: size.width * .74,
+      height: size.width * .74,
+    );
+    canvas.drawArc(upperOrbit, 2.05, 1.45, false, track);
+    canvas.drawArc(upperOrbit.deflate(15), 2.08, 1.39, false, fineTrack);
+    canvas.drawArc(upperOrbit.deflate(31), 2.12, 1.32, false, track);
+
+    final lowerOrbit = Rect.fromCenter(
+      center: Offset(size.width * -.10, size.height * .90),
+      width: size.width * .58,
+      height: size.width * .58,
+    );
+    canvas.drawArc(lowerOrbit, 5.12, 1.30, false, track);
+    canvas.drawArc(lowerOrbit.deflate(14), 5.18, 1.22, false, fineTrack);
+
+    final gridPaint = Paint()
+      ..color = const Color(0xff465b98).withValues(alpha: .13)
+      ..strokeWidth = .7;
+    final gridOrigin = Offset(size.width * .86, size.height * .17);
+    for (var i = 0; i < 5; i++) {
+      final x = gridOrigin.dx + i * 14.0;
+      final y = gridOrigin.dy + i * 14.0;
+      canvas.drawLine(
+        Offset(x, gridOrigin.dy),
+        Offset(x, gridOrigin.dy + 56),
+        gridPaint,
+      );
+      canvas.drawLine(
+        Offset(gridOrigin.dx, y),
+        Offset(gridOrigin.dx + 56, y),
+        gridPaint,
+      );
+    }
+
+    final nodePaint = Paint()
+      ..color = const Color(0xff22b9d8).withValues(alpha: .62);
+    for (final point in [
+      Offset(size.width * .79, size.height * .10),
+      Offset(size.width * .92, size.height * .20),
+      Offset(size.width * .11, size.height * .84),
+    ]) {
+      canvas.drawCircle(point, 2.2, nodePaint);
+      canvas.drawCircle(
+        point,
+        6,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .7
+          ..color = const Color(0xff22b9d8).withValues(alpha: .32),
+      );
     }
   }
 
