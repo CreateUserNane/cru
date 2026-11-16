@@ -27,10 +27,7 @@ class AuthController extends Controller
             'email' => $data['email'], 'password' => $data['password'],
         ]);
 
-        return response()->json([
-            'user' => $this->userData($user),
-            'token' => $user->createToken('cru-mobile')->plainTextToken,
-        ], 201);
+        return response()->json(['user' => $this->userData($user)], 201);
     }
 
     public function login(Request $request): JsonResponse

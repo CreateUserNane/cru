@@ -106,12 +106,15 @@ class AuthApi {
     return CruUser.fromJson(data['user'] as Map<String, dynamic>);
   }
 
-  Future<CruUser> signup(String username, String email, String password) =>
-      _authenticate('register', {
-        'username': username,
-        'email': email,
-        'password': password,
-      });
+  Future<CruUser> signup(String username, String email, String password) async {
+    final data = await _request(
+      'register',
+      method: 'POST',
+      body: {'username': username, 'email': email, 'password': password},
+    );
+    return CruUser.fromJson(data['user'] as Map<String, dynamic>);
+  }
+
   Future<CruUser> login(String email, String password) =>
       _authenticate('login', {'email': email, 'password': password});
 
@@ -170,10 +173,9 @@ class _CruAppState extends State<CruApp> {
     String email,
     String password,
   ) async {
-    final user = await _api.signup(name, email, password);
+    await _api.signup(name, email, password);
     if (mounted)
       setState(() {
-        _user = user;
         _hasAccount = true;
       });
   }
@@ -253,6 +255,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _showPassword = false;
   bool _busy = false;
   String? _error;
+  String? _success;
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
@@ -277,6 +280,7 @@ class _AuthScreenState extends State<AuthScreen> {
     setState(() {
       _busy = true;
       _error = null;
+      _success = null;
     });
     try {
       if (_signup) {
@@ -285,6 +289,13 @@ class _AuthScreenState extends State<AuthScreen> {
           _email.text.trim(),
           _password.text,
         );
+        if (mounted) {
+          setState(() {
+            _signup = false;
+            _password.clear();
+            _success = 'Account created. Log in to continue.';
+          });
+        }
       } else {
         await widget.onSignIn(_email.text.trim(), _password.text);
       }
@@ -389,6 +400,16 @@ class _AuthScreenState extends State<AuthScreen> {
                           style: const TextStyle(color: _danger, fontSize: 13),
                         ),
                       ],
+                      if (_success != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          _success!,
+                          style: const TextStyle(
+                            color: Color(0xff367258),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 26),
                       _PrimaryButton(
                         label: _signup ? 'Create account' : 'Log in',
@@ -407,6 +428,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             onPressed: () => setState(() {
                               _signup = !_signup;
                               _error = null;
+                              _success = null;
                             }),
                             style: TextButton.styleFrom(
                               foregroundColor: _accent,
