@@ -1,17 +1,36 @@
 # cru
 
-A new Flutter project.
+Flutter account app with a Laravel 13 API, Sanctum bearer-token authentication, and MySQL storage.
 
-## Getting Started
+## Start the API
 
-This project is a starting point for a Flutter application.
+Requirements: PHP 8.3+, Composer, and MySQL.
 
-A few resources to get you started if this is your first Flutter project:
+1. Create an empty MySQL database named `cru` (or change `DB_DATABASE` in `backend/.env`).
+2. Copy `backend/.env.example` to `backend/.env` and set `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` for your MySQL instance.
+3. Run:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+   ```powershell
+   cd backend
+   composer install
+   php artisan key:generate
+   php artisan migrate
+   php artisan serve --host 0.0.0.0
+   ```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+The API is available at `http://localhost:8000/api`. Endpoints are `POST /register`, `POST /login`, `GET /user`, `PUT /user`, and `POST /logout`. Authenticated requests use `Authorization: Bearer <token>`.
+
+## Run the Flutter app
+
+In another terminal, from the repository root:
+
+```powershell
+flutter pub get
+flutter run
+```
+
+The default API URL is `http://10.0.2.2:8000/api` for the Android emulator. For iOS simulator, use `flutter run --dart-define=API_BASE_URL=http://localhost:8000/api`. For a physical phone, use the computer's LAN IP and start Laravel with `--host 0.0.0.0`, for example `flutter run --dart-define=API_BASE_URL=http://192.168.1.20:8000/api`.
+
+The app stores its Sanctum token with the platform's secure storage and restores the signed-in user when reopened.
+
+Local HTTP is enabled for emulator/device development. Use HTTPS and remove the Android cleartext allowance before deploying the API publicly.

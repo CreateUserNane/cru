@@ -1,6 +1,116 @@
 import 'dart:ui';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+
+const _apiBase = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'http://10.0.2.2:8000/api',
+);
+const _tokenKey = 'cru_api_token';
+
+class CruUser {
+  const CruUser({required this.username, required this.email});
+  final String username;
+  final String email;
+  factory CruUser.fromJson(Map<String, dynamic> json) => CruUser(
+    username: json['username'] as String,
+    email: json['email'] as String,
+  );
+}
+
+class AuthApi {
+  static const _storage = FlutterSecureStorage();
+  final _client = http.Client();
+
+  Future<Map<String, dynamic>> _request(
+    String path, {
+    String method = 'GET',
+    Map<String, dynamic>? body,
+    bool auth = false,
+  }) async {
+    final uri = Uri.parse('$_apiBase/$path');
+    final token = auth ? await _storage.read(key: _tokenKey) : null;
+    final headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+    final response = switch (method) {
+      'POST' => await _client.post(
+        uri,
+        headers: headers,
+        body: jsonEncode(body ?? {}),
+      ),
+      'PUT' => await _client.put(
+        uri,
+        headers: headers,
+        body: jsonEncode(body ?? {}),
+      ),
+      _ => await _client.get(uri, headers: headers),
+    };
+    final data = response.body.isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      final errors = data['errors'] as Map<String, dynamic>?;
+      final detail = errors?.values.firstOrNull;
+      throw Exception(
+        detail is List
+            ? detail.first.toString()
+            : (data['message'] ?? 'Request failed.').toString(),
+      );
+    }
+    return data;
+  }
+
+  Future<CruUser?> restore() async {
+    if (await _storage.read(key: _tokenKey) == null) return null;
+    try {
+      final data = await _request('user', auth: true);
+      return CruUser.fromJson(data['user'] as Map<String, dynamic>);
+    } catch (_) {
+      await _storage.delete(key: _tokenKey);
+      return null;
+    }
+  }
+
+  Future<CruUser> _authenticate(String path, Map<String, dynamic> body) async {
+    final data = await _request(path, method: 'POST', body: body);
+    await _storage.write(key: _tokenKey, value: data['token'] as String);
+    return CruUser.fromJson(data['user'] as Map<String, dynamic>);
+  }
+
+  Future<CruUser> signup(String username, String email, String password) =>
+      _authenticate('register', {
+        'username': username,
+        'email': email,
+        'password': password,
+      });
+  Future<CruUser> login(String email, String password) =>
+      _authenticate('login', {'email': email, 'password': password});
+
+  Future<CruUser> update(
+    String username,
+    String email,
+    String? password,
+  ) async {
+    final body = <String, dynamic>{'username': username, 'email': email};
+    if (password != null && password.isNotEmpty) body['password'] = password;
+    final data = await _request('user', method: 'PUT', body: body, auth: true);
+    return CruUser.fromJson(data['user'] as Map<String, dynamic>);
+  }
+
+  Future<void> logout() async {
+    try {
+      await _request('logout', method: 'POST', auth: true);
+    } finally {
+      await _storage.delete(key: _tokenKey);
+    }
+  }
+}
 
 void main() => runApp(const CruApp());
 
@@ -12,34 +122,63 @@ class CruApp extends StatefulWidget {
 }
 
 class _CruAppState extends State<CruApp> {
-  String? _username;
-  String? _email;
-  String? _password;
-  bool _signedIn = false;
+  final _api = AuthApi();
+  CruUser? _user;
+  bool _loading = true;
+  bool _hasAccount = false;
 
-  void _createAccount(String name, String email, String password) {
-    setState(() {
-      _username = name;
-      _email = email;
-      _password = password;
-      _signedIn = true;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _restore();
   }
 
-  bool _signIn(String email, String password) {
-    if (email.trim().toLowerCase() != _email?.toLowerCase() ||
-        password != _password)
-      return false;
-    setState(() => _signedIn = true);
-    return true;
+  Future<void> _restore() async {
+    final user = await _api.restore();
+    if (mounted)
+      setState(() {
+        _user = user;
+        _loading = false;
+      });
   }
 
-  void _updateProfile(String name, String email, String? password) {
-    setState(() {
-      _username = name;
-      _email = email;
-      if (password != null && password.isNotEmpty) _password = password;
-    });
+  Future<void> _createAccount(
+    String name,
+    String email,
+    String password,
+  ) async {
+    final user = await _api.signup(name, email, password);
+    if (mounted)
+      setState(() {
+        _user = user;
+        _hasAccount = true;
+      });
+  }
+
+  Future<void> _signIn(String email, String password) async {
+    final user = await _api.login(email, password);
+    if (mounted)
+      setState(() {
+        _user = user;
+        _hasAccount = true;
+      });
+  }
+
+  Future<void> _updateProfile(
+    String name,
+    String email,
+    String? password,
+  ) async {
+    final user = await _api.update(name, email, password);
+    if (mounted) setState(() => _user = user);
+  }
+
+  Future<void> _signOut() async {
+    try {
+      await _api.logout();
+    } finally {
+      if (mounted) setState(() => _user = null);
+    }
   }
 
   @override
@@ -56,17 +195,18 @@ class _CruAppState extends State<CruApp> {
       ),
       fontFamily: 'SF Pro Display',
     ),
-    home: _signedIn
+    home: _loading
+        ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+        : _user != null
         ? ProfileScreen(
-            username: _username!,
-            email: _email!,
+            user: _user!,
             onSave: _updateProfile,
-            onSignOut: () => setState(() => _signedIn = false),
+            onSignOut: _signOut,
           )
         : AuthScreen(
             onCreate: _createAccount,
             onSignIn: _signIn,
-            hasAccount: _email != null,
+            hasAccount: _hasAccount,
           ),
   );
 }
@@ -82,8 +222,8 @@ class AuthScreen extends StatefulWidget {
     required this.onSignIn,
     required this.hasAccount,
   });
-  final void Function(String, String, String) onCreate;
-  final bool Function(String, String) onSignIn;
+  final Future<void> Function(String, String, String) onCreate;
+  final Future<void> Function(String, String) onSignIn;
   final bool hasAccount;
 
   @override
@@ -93,6 +233,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   bool _signup = false;
   bool _showPassword = false;
+  bool _busy = false;
   String? _error;
   final _name = TextEditingController();
   final _email = TextEditingController();
@@ -113,12 +254,29 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_form.currentState!.validate()) return;
-    if (_signup) {
-      widget.onCreate(_name.text.trim(), _email.text.trim(), _password.text);
-    } else if (!widget.onSignIn(_email.text.trim(), _password.text)) {
-      setState(() => _error = 'That email and password don’t match.');
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      if (_signup) {
+        await widget.onCreate(
+          _name.text.trim(),
+          _email.text.trim(),
+          _password.text,
+        );
+      } else {
+        await widget.onSignIn(_email.text.trim(), _password.text);
+      }
+    } catch (error) {
+      if (mounted)
+        setState(
+          () => _error = error.toString().replaceFirst('Exception: ', ''),
+        );
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -225,6 +383,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               label: _signup ? 'Create account' : 'Log in',
                               icon: Icons.arrow_forward_rounded,
                               onPressed: _submit,
+                              busy: _busy,
                             ),
                             const SizedBox(height: 20),
                             Center(
@@ -287,24 +446,24 @@ class _AuthScreenState extends State<AuthScreen> {
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
     super.key,
-    required this.username,
-    required this.email,
+    required this.user,
     required this.onSave,
     required this.onSignOut,
   });
-  final String username, email;
-  final void Function(String, String, String?) onSave;
-  final VoidCallback onSignOut;
+  final CruUser user;
+  final Future<void> Function(String, String, String?) onSave;
+  final Future<void> Function() onSignOut;
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  late final _name = TextEditingController(text: widget.username);
-  late final _email = TextEditingController(text: widget.email);
+  late final _name = TextEditingController(text: widget.user.username);
+  late final _email = TextEditingController(text: widget.user.email);
   final _password = TextEditingController();
   final _form = GlobalKey<FormState>();
   bool _editing = false;
+  bool _saving = false;
   String? _notice;
   @override
   void dispose() {
@@ -314,13 +473,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
-    widget.onSave(_name.text.trim(), _email.text.trim(), _password.text);
-    setState(() {
-      _editing = false;
-      _notice = 'Your details are up to date.';
-    });
+    setState(() => _saving = true);
+    try {
+      await widget.onSave(
+        _name.text.trim(),
+        _email.text.trim(),
+        _password.text,
+      );
+      if (mounted)
+        setState(() {
+          _editing = false;
+          _notice = 'Your details are up to date.';
+          _password.clear();
+        });
+    } catch (error) {
+      if (mounted)
+        setState(
+          () => _notice = error.toString().replaceFirst('Exception: ', ''),
+        );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -366,9 +541,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               child: Center(
                                 child: Text(
-                                  widget.username.isEmpty
+                                  widget.user.username.isEmpty
                                       ? 'C'
-                                      : widget.username[0].toUpperCase(),
+                                      : widget.user.username[0].toUpperCase(),
                                   style: const TextStyle(
                                     fontSize: 27,
                                     color: _ink,
@@ -453,14 +628,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       label: 'Save changes',
                                       icon: Icons.check_rounded,
                                       onPressed: _save,
+                                      busy: _saving,
                                     ),
                                   ),
                                   const SizedBox(width: 10),
                                   IconButton(
                                     onPressed: () => setState(() {
                                       _editing = false;
-                                      _name.text = widget.username;
-                                      _email.text = widget.email;
+                                      _name.text = widget.user.username;
+                                      _email.text = widget.user.email;
                                       _password.clear();
                                     }),
                                     icon: const Icon(Icons.close_rounded),
@@ -686,10 +862,12 @@ class _PrimaryButton extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.onPressed,
+    this.busy = false,
   });
   final String label;
   final IconData icon;
   final VoidCallback onPressed;
+  final bool busy;
   @override
   Widget build(BuildContext context) => SizedBox(
     height: 54,
@@ -708,8 +886,14 @@ class _PrimaryButton extends StatelessWidget {
         ],
       ),
       child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 19),
+        onPressed: busy ? null : onPressed,
+        icon: busy
+            ? const SizedBox(
+                width: 17,
+                height: 17,
+                child: CircularProgressIndicator(strokeWidth: 2, color: _ink),
+              )
+            : Icon(icon, size: 19),
         label: Text(
           label,
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
