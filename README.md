@@ -29,7 +29,7 @@ flutter pub get
 flutter run
 ```
 
-The default API URL is `http://10.0.2.2:8000/api` for the Android emulator. For iOS simulator, use `flutter run --dart-define=API_BASE_URL=http://localhost:8000/api`. For a physical phone, use the computer's LAN IP and start Laravel with `--host 0.0.0.0`, for example `flutter run --dart-define=API_BASE_URL=http://192.168.1.20:8000/api`.
+The app automatically uses `http://localhost:8000/api` for web, desktop, and iOS simulator, and `http://10.0.2.2:8000/api` for the Android emulator. For a physical phone, use the computer's LAN IP and start Laravel with `--host 0.0.0.0`, for example `flutter run --dart-define=API_BASE_URL=http://192.168.1.20:8000/api`.
 
 The app stores its Sanctum token with the platform's secure storage and restores the signed-in user when reopened.
 

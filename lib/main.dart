@@ -1,13 +1,24 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
-const _apiBase = String.fromEnvironment(
-  'API_BASE_URL',
-  defaultValue: 'http://10.0.2.2:8000/api',
-);
+const _apiBaseOverride = String.fromEnvironment('API_BASE_URL');
+String get _apiBase {
+  if (_apiBaseOverride.isNotEmpty) return _apiBaseOverride;
+  final platform = defaultTargetPlatform;
+  if (kIsWeb ||
+      platform == TargetPlatform.iOS ||
+      platform == TargetPlatform.macOS ||
+      platform == TargetPlatform.windows ||
+      platform == TargetPlatform.linux) {
+    return 'http://localhost:8000/api';
+  }
+  return 'http://10.0.2.2:8000/api';
+}
+
 const _tokenKey = 'cru_api_token';
 const _canvas = Color(0xfff2f3f7);
 const _surface = Color(0xffffffff);
