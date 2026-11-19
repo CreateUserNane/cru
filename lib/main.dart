@@ -21,12 +21,13 @@ String get _apiBase {
 }
 
 const _tokenKey = 'cru_api_token';
-const _canvas = Color(0xfff2f3f7);
+const _canvas = Color(0xfff3f4ed);
 const _surface = Color(0xffffffff);
-const _ink = Color(0xff202638);
-const _muted = Color(0xff687083);
-const _line = Color(0xffd9dde6);
-const _accent = Color(0xff3d58a8);
+const _ink = Color(0xff18253f);
+const _muted = Color(0xff687386);
+const _line = Color(0xffdce1d7);
+const _accent = Color(0xff3157d5);
+const _lime = Color(0xffd8f36a);
 const _danger = Color(0xffa43e45);
 
 class CruUser {
@@ -162,11 +163,12 @@ class _CruAppState extends State<CruApp> {
 
   Future<void> _restore() async {
     final user = await _api.restore();
-    if (mounted)
+    if (mounted) {
       setState(() {
         _user = user;
         _loading = false;
       });
+    }
   }
 
   Future<void> _createAccount(
@@ -175,19 +177,21 @@ class _CruAppState extends State<CruApp> {
     String password,
   ) async {
     await _api.signup(name, email, password);
-    if (mounted)
+    if (mounted) {
       setState(() {
         _hasAccount = true;
       });
+    }
   }
 
   Future<void> _signIn(String email, String password) async {
     final user = await _api.login(email, password);
-    if (mounted)
+    if (mounted) {
       setState(() {
         _user = user;
         _hasAccount = true;
       });
+    }
   }
 
   Future<void> _updateProfile(
@@ -209,12 +213,13 @@ class _CruAppState extends State<CruApp> {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'cru',
+    title: 'jsp',
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       scaffoldBackgroundColor: _canvas,
+      fontFamily: 'Arial',
       colorScheme: ColorScheme.fromSeed(
         seedColor: _accent,
         brightness: Brightness.light,
@@ -301,10 +306,11 @@ class _AuthScreenState extends State<AuthScreen> {
         await widget.onSignIn(_email.text.trim(), _password.text);
       }
     } catch (error) {
-      if (mounted)
+      if (mounted) {
         setState(
           () => _error = error.toString().replaceFirst('Exception: ', ''),
         );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -315,154 +321,279 @@ class _AuthScreenState extends State<AuthScreen> {
     backgroundColor: _canvas,
     body: LiquidStage(
       child: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _Brand(),
-                  const SizedBox(height: 58),
-                  Text(
-                    _signup ? 'Create account' : 'Sign in',
-                    style: const TextStyle(
-                      color: _ink,
-                      fontSize: 36,
-                      height: 1.08,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -1.3,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    _signup
-                        ? 'Set up your cru profile.'
-                        : 'Manage your cru profile.',
-                    style: const TextStyle(
-                      color: _muted,
-                      fontSize: 15,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 34),
-                  Form(
-                    key: _form,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = constraints.maxWidth >= 760;
+            final form = _authForm();
+            return wide
+                ? Row(
+                    children: [
+                      Expanded(flex: 5, child: _WelcomePanel()),
+                      Expanded(
+                        flex: 5,
+                        child: Center(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(56),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 390),
+                              child: form,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 18, 24, 32),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (_signup) ...[
-                          _Field(
-                            controller: _name,
-                            label: 'Username',
-                            validator: (value) =>
-                                (value == null || value.trim().length < 2)
-                                ? 'Enter at least 2 characters.'
-                                : null,
-                          ),
-                          const SizedBox(height: 18),
-                        ],
-                        _Field(
-                          controller: _email,
-                          label: 'Email address',
-                          keyboardType: TextInputType.emailAddress,
-                          validator: (value) =>
-                              (value == null ||
-                                  !value.contains('@') ||
-                                  !value.contains('.'))
-                              ? 'Enter a valid email address.'
-                              : null,
-                        ),
-                        const SizedBox(height: 18),
-                        _Field(
-                          controller: _password,
-                          label: 'Password',
-                          obscure: !_showPassword,
-                          suffix: IconButton(
-                            onPressed: () =>
-                                setState(() => _showPassword = !_showPassword),
-                            icon: Icon(
-                              _showPassword
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                              size: 19,
-                              color: _muted,
-                            ),
-                          ),
-                          validator: (value) =>
-                              (value == null || value.length < 6)
-                              ? 'Use at least 6 characters.'
-                              : null,
-                        ),
-                        if (_error != null) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            _error!,
-                            style: const TextStyle(
-                              color: _danger,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                        if (_success != null) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            _success!,
-                            style: const TextStyle(
-                              color: Color(0xff367258),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
+                        const _WelcomePanel(compact: true),
                         const SizedBox(height: 26),
-                        _PrimaryButton(
-                          label: _signup ? 'Create account' : 'Log in',
-                          onPressed: _submit,
-                          busy: _busy,
-                        ),
-                        const SizedBox(height: 24),
-                        Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            Text(
-                              _signup ? 'Already registered? ' : 'New to cru? ',
-                              style: const TextStyle(
-                                color: _muted,
-                                fontSize: 14,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () => setState(() {
-                                _signup = !_signup;
-                                _error = null;
-                                _success = null;
-                              }),
-                              style: TextButton.styleFrom(
-                                foregroundColor: _accent,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: Text(
-                                _signup ? 'Log in' : 'Create account',
-                              ),
-                            ),
-                          ],
+                        Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 440),
+                            child: form,
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+                  );
+          },
         ),
       ),
     ),
   );
+
+  Widget _authForm() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const _Brand(),
+      const SizedBox(height: 38),
+      Text(
+        _signup ? 'Create account' : 'Welcome back',
+        style: const TextStyle(
+          color: _ink,
+          fontSize: 34,
+          height: 1.05,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -1.5,
+        ),
+      ),
+      const SizedBox(height: 9),
+      Text(
+        _signup
+            ? 'A little space to keep up with your people.'
+            : 'Pick up where your people are.',
+        style: const TextStyle(color: _muted, fontSize: 15, height: 1.45),
+      ),
+      const SizedBox(height: 28),
+      Form(
+        key: _form,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_signup) ...[
+              _Field(
+                controller: _name,
+                label: 'Username',
+                validator: (value) => (value == null || value.trim().length < 2)
+                    ? 'Enter at least 2 characters.'
+                    : null,
+              ),
+              const SizedBox(height: 18),
+            ],
+            _Field(
+              controller: _email,
+              label: 'Email address',
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) =>
+                  (value == null ||
+                      !value.contains('@') ||
+                      !value.contains('.'))
+                  ? 'Enter a valid email address.'
+                  : null,
+            ),
+            const SizedBox(height: 18),
+            _Field(
+              controller: _password,
+              label: 'Password',
+              obscure: !_showPassword,
+              suffix: IconButton(
+                onPressed: () => setState(() => _showPassword = !_showPassword),
+                icon: Icon(
+                  _showPassword
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  size: 19,
+                  color: _muted,
+                ),
+              ),
+              validator: (value) => (value == null || value.length < 6)
+                  ? 'Use at least 6 characters.'
+                  : null,
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _error!,
+                style: const TextStyle(color: _danger, fontSize: 13),
+              ),
+            ],
+            if (_success != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _success!,
+                style: const TextStyle(color: Color(0xff367258), fontSize: 13),
+              ),
+            ],
+            const SizedBox(height: 26),
+            _PrimaryButton(
+              label: _signup ? 'Create account' : 'Log in',
+              onPressed: _submit,
+              busy: _busy,
+            ),
+            const SizedBox(height: 18),
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  _signup ? 'Already registered? ' : 'New to jsp? ',
+                  style: const TextStyle(color: _muted, fontSize: 14),
+                ),
+                TextButton(
+                  onPressed: () => setState(() {
+                    _signup = !_signup;
+                    _error = null;
+                    _success = null;
+                  }),
+                  style: TextButton.styleFrom(
+                    foregroundColor: _accent,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(_signup ? 'Log in' : 'Create account'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+class _WelcomePanel extends StatelessWidget {
+  const _WelcomePanel({this.compact = false});
+  final bool compact;
+  @override
+  Widget build(BuildContext context) => Container(
+    constraints: BoxConstraints(minHeight: compact ? 190 : double.infinity),
+    margin: compact ? EdgeInsets.zero : const EdgeInsets.all(14),
+    padding: EdgeInsets.all(compact ? 22 : 48),
+    decoration: BoxDecoration(
+      color: _accent,
+      borderRadius: BorderRadius.circular(compact ? 24 : 30),
+    ),
+    child: Stack(
+      children: [
+        Positioned(
+          right: -20,
+          top: compact ? -42 : 30,
+          child: CustomPaint(
+            size: Size(compact ? 180 : 300, compact ? 180 : 300),
+            painter: _CircleMarkPainter(),
+          ),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: _lime,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'j',
+                      style: TextStyle(
+                        fontSize: 23,
+                        height: 1,
+                        fontWeight: FontWeight.w800,
+                        color: _ink,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  'jsp',
+                  style: TextStyle(
+                    fontSize: 23,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -1,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            const Text(
+              'Good things\nhappen together.',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 39,
+                height: 1.02,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -1.7,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Make room for the people who make your days.',
+              style: TextStyle(
+                color: Color(0xffe1e8ff),
+                fontSize: 15,
+                height: 1.5,
+              ),
+            ),
+            if (!compact) const Spacer(),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+class _CircleMarkPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2
+      ..color = Colors.white.withValues(alpha: .26);
+    for (var i = 0; i < 4; i++) {
+      canvas.drawCircle(
+        Offset(size.width * .53, size.height * .48),
+        size.width * (.18 + i * .12),
+        p,
+      );
+    }
+    canvas.drawCircle(
+      Offset(size.width * .53, size.height * .48),
+      size.width * .095,
+      Paint()..color = _lime,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class ProfileScreen extends StatefulWidget {
@@ -504,17 +635,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _email.text.trim(),
         _password.text,
       );
-      if (mounted)
+      if (mounted) {
         setState(() {
           _editing = false;
           _notice = 'Your details are up to date.';
           _password.clear();
         });
+      }
     } catch (error) {
-      if (mounted)
+      if (mounted) {
         setState(
           () => _notice = error.toString().replaceFirst('Exception: ', ''),
         );
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -534,54 +667,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _Brand(),
-                    const SizedBox(height: 54),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        LiquidGlass(
-                          radius: 16,
-                          child: SizedBox(
-                            width: 54,
-                            height: 54,
+                        const _Brand(),
+                        IconButton(
+                          tooltip: 'Log out',
+                          onPressed: widget.onSignOut,
+                          icon: const Icon(Icons.logout_rounded, color: _muted),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: _accent,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 58,
+                            height: 58,
+                            decoration: BoxDecoration(
+                              color: _lime,
+                              borderRadius: BorderRadius.circular(19),
+                            ),
                             child: Center(
                               child: Text(
                                 widget.user.username[0].toUpperCase(),
                                 style: const TextStyle(
-                                  color: _accent,
-                                  fontSize: 23,
-                                  fontWeight: FontWeight.w700,
+                                  color: _ink,
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.user.username,
-                                style: const TextStyle(
-                                  color: _ink,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.user.username,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                widget.user.email,
-                                style: const TextStyle(
-                                  color: _muted,
-                                  fontSize: 14,
+                                const SizedBox(height: 4),
+                                Text(
+                                  widget.user.email,
+                                  style: const TextStyle(
+                                    color: Color(0xffe1e8ff),
+                                    fontSize: 13,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 30),
                     Text(
                       'Account details',
                       style: const TextStyle(
@@ -697,20 +849,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    const Divider(height: 1, color: _line),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        onPressed: widget.onSignOut,
-                        icon: const Icon(Icons.logout_rounded, size: 17),
-                        label: const Text('Log out'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: _muted,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
-                    ),
+                    const SizedBox(height: 22),
                   ],
                 ),
               ),
@@ -735,7 +874,7 @@ class _Brand extends StatelessWidget {
           height: 34,
           child: Center(
             child: Text(
-              'c',
+              'j',
               style: const TextStyle(
                 color: _accent,
                 fontSize: 22,
@@ -748,7 +887,7 @@ class _Brand extends StatelessWidget {
       ),
       const SizedBox(width: 10),
       const Text(
-        'cru',
+        'jsp',
         style: TextStyle(
           color: _ink,
           fontSize: 22,

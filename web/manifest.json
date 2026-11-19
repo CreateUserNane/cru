@@ -1,6 +1,6 @@
 {
-    "name": "cru",
-    "short_name": "cru",
+    "name": "jsp",
+    "short_name": "jsp",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,4 +1,4 @@
-# cru
+# jsp
 
 Flutter account app with a Laravel 13 API, Sanctum bearer-token authentication, and MySQL storage.
 
