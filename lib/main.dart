@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -21,13 +20,13 @@ String get _apiBase {
 }
 
 const _tokenKey = 'cru_api_token';
-const _canvas = Color(0xfff3f4ed);
+const _canvas = Color(0xfff1f4f7);
 const _surface = Color(0xffffffff);
-const _ink = Color(0xff18253f);
-const _muted = Color(0xff687386);
-const _line = Color(0xffdce1d7);
-const _accent = Color(0xff3157d5);
-const _lime = Color(0xffd8f36a);
+const _ink = Color(0xff172a3a);
+const _muted = Color(0xff6f7d89);
+const _line = Color(0xffdce4ea);
+const _accent = Color(0xff2169d5);
+const _lime = Color(0xffe6efff);
 const _danger = Color(0xffa43e45);
 
 class CruUser {
@@ -213,7 +212,7 @@ class _CruAppState extends State<CruApp> {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'jsp',
+    title: 'MAXX',
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
       useMaterial3: true,
@@ -319,47 +318,91 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: _canvas,
-    body: LiquidStage(
-      child: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final wide = constraints.maxWidth >= 760;
-            final form = _authForm();
-            return wide
-                ? Row(
+    body: SafeArea(
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              color: _ink,
+              padding: const EdgeInsets.fromLTRB(24, 30, 24, 42),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(flex: 5, child: _WelcomePanel()),
-                      Expanded(
-                        flex: 5,
-                        child: Center(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(56),
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 390),
-                              child: form,
+                      Row(
+                        children: [
+                          Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: _accent,
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            child: const Icon(
+                              Icons.bolt_rounded,
+                              color: Colors.white,
+                              size: 26,
                             ),
                           ),
+                          const SizedBox(width: 11),
+                          const Text(
+                            'MAXX',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 23,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 35),
+                      const Text(
+                        'More of what\nbrings you together.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 34,
+                          height: 1.08,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'YOUR CIRCLE, ONE PLACE',
+                        style: TextStyle(
+                          color: Color(0xffb9c8d5),
+                          fontSize: 10,
+                          letterSpacing: 1.8,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
-                  )
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(24, 18, 24, 32),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const _WelcomePanel(compact: true),
-                        const SizedBox(height: 26),
-                        Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 440),
-                            child: form,
-                          ),
-                        ),
-                      ],
+                  ),
+                ),
+              ),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: Container(
+                    padding: const EdgeInsets.all(26),
+                    decoration: BoxDecoration(
+                      color: _surface,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: _line),
                     ),
-                  );
-          },
+                    child: _authForm(),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     ),
@@ -368,8 +411,7 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget _authForm() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const _Brand(),
-      const SizedBox(height: 38),
+      const SizedBox(height: 2),
       Text(
         _signup ? 'Create account' : 'Welcome back',
         style: const TextStyle(
@@ -419,6 +461,7 @@ class _AuthScreenState extends State<AuthScreen> {
               controller: _password,
               label: 'Password',
               obscure: !_showPassword,
+              onChanged: (_) => setState(() {}),
               suffix: IconButton(
                 onPressed: () => setState(() => _showPassword = !_showPassword),
                 icon: Icon(
@@ -433,6 +476,10 @@ class _AuthScreenState extends State<AuthScreen> {
                   ? 'Use at least 6 characters.'
                   : null,
             ),
+            if (_signup && _password.text.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _PasswordStrength(score: _passwordStrength),
+            ],
             if (_error != null) ...[
               const SizedBox(height: 12),
               Text(
@@ -458,7 +505,7 @@ class _AuthScreenState extends State<AuthScreen> {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text(
-                  _signup ? 'Already registered? ' : 'New to jsp? ',
+                  _signup ? 'Already registered? ' : 'New to MAXX? ',
                   style: const TextStyle(color: _muted, fontSize: 14),
                 ),
                 TextButton(
@@ -482,118 +529,64 @@ class _AuthScreenState extends State<AuthScreen> {
       ),
     ],
   );
+
+  int get _passwordStrength {
+    final value = _password.text;
+    var score = value.length >= 6 ? 1 : 0;
+    if (RegExp(r'[A-Za-z]').hasMatch(value) && RegExp(r'\d').hasMatch(value)) {
+      score++;
+    }
+    if (value.length >= 10 || RegExp(r'[^A-Za-z0-9]').hasMatch(value)) {
+      score++;
+    }
+    return score.clamp(0, 3).toInt();
+  }
 }
 
-class _WelcomePanel extends StatelessWidget {
-  const _WelcomePanel({this.compact = false});
-  final bool compact;
+class _PasswordStrength extends StatelessWidget {
+  const _PasswordStrength({required this.score});
+  final int score;
+
   @override
-  Widget build(BuildContext context) => Container(
-    constraints: BoxConstraints(minHeight: compact ? 190 : double.infinity),
-    margin: compact ? EdgeInsets.zero : const EdgeInsets.all(14),
-    padding: EdgeInsets.all(compact ? 22 : 48),
-    decoration: BoxDecoration(
-      color: _accent,
-      borderRadius: BorderRadius.circular(compact ? 24 : 30),
-    ),
-    child: Stack(
+  Widget build(BuildContext context) {
+    final labels = ['Add a longer password', 'Getting there', 'Good', 'Strong'];
+    final colors = [
+      const Color(0xffdce4ea),
+      const Color(0xffd56a51),
+      const Color(0xffdfa53b),
+      const Color(0xff32916c),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Positioned(
-          right: -20,
-          top: compact ? -42 : 30,
-          child: CustomPaint(
-            size: Size(compact ? 180 : 300, compact ? 180 : 300),
-            painter: _CircleMarkPainter(),
+        Row(
+          children: List.generate(
+            3,
+            (index) => Expanded(
+              child: Container(
+                height: 4,
+                margin: EdgeInsets.only(right: index == 2 ? 0 : 5),
+                decoration: BoxDecoration(
+                  color: index < score
+                      ? colors[score]
+                      : const Color(0xffe6eaee),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
           ),
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: _lime,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'j',
-                      style: TextStyle(
-                        fontSize: 23,
-                        height: 1,
-                        fontWeight: FontWeight.w800,
-                        color: _ink,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Text(
-                  'jsp',
-                  style: TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: -1,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            const Text(
-              'Good things\nhappen together.',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 39,
-                height: 1.02,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -1.7,
-              ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Make room for the people who make your days.',
-              style: TextStyle(
-                color: Color(0xffe1e8ff),
-                fontSize: 15,
-                height: 1.5,
-              ),
-            ),
-            if (!compact) const Spacer(),
-          ],
+        const SizedBox(height: 6),
+        Text(
+          labels[score],
+          style: TextStyle(
+            color: score < 2 ? _muted : colors[score],
+            fontSize: 12,
+          ),
         ),
       ],
-    ),
-  );
-}
-
-class _CircleMarkPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final p = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..color = Colors.white.withValues(alpha: .26);
-    for (var i = 0; i < 4; i++) {
-      canvas.drawCircle(
-        Offset(size.width * .53, size.height * .48),
-        size.width * (.18 + i * .12),
-        p,
-      );
-    }
-    canvas.drawCircle(
-      Offset(size.width * .53, size.height * .48),
-      size.width * .095,
-      Paint()..color = _lime,
     );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class ProfileScreen extends StatefulWidget {
@@ -657,201 +650,193 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _canvas,
-      body: LiquidStage(
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const _Brand(),
+                      IconButton(
+                        tooltip: 'Log out',
+                        onPressed: widget.onSignOut,
+                        icon: const Icon(Icons.logout_rounded, color: _muted),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(24, 26, 24, 24),
+                    decoration: BoxDecoration(
+                      color: _surface,
+                      border: Border.all(color: _line),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const _Brand(),
-                        IconButton(
-                          tooltip: 'Log out',
-                          onPressed: widget.onSignOut,
-                          icon: const Icon(Icons.logout_rounded, color: _muted),
+                        Container(
+                          width: 68,
+                          height: 68,
+                          decoration: BoxDecoration(
+                            color: _lime,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              widget.user.username[0].toUpperCase(),
+                              style: const TextStyle(
+                                color: _accent,
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          widget.user.username,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: _ink,
+                            fontSize: 21,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          widget.user.email,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: _muted, fontSize: 13),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: _accent,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 58,
-                            height: 58,
-                            decoration: BoxDecoration(
-                              color: _lime,
-                              borderRadius: BorderRadius.circular(19),
-                            ),
-                            child: Center(
-                              child: Text(
-                                widget.user.username[0].toUpperCase(),
-                                style: const TextStyle(
-                                  color: _ink,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.user.username,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 19,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  widget.user.email,
-                                  style: const TextStyle(
-                                    color: Color(0xffe1e8ff),
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                  ),
+                  const SizedBox(height: 30),
+                  Text(
+                    'Account details',
+                    style: const TextStyle(
+                      color: _ink,
+                      fontSize: 29,
+                      height: 1.1,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -.8,
                     ),
-                    const SizedBox(height: 30),
-                    Text(
-                      'Account details',
-                      style: const TextStyle(
-                        color: _ink,
-                        fontSize: 29,
-                        height: 1.1,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -.8,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _editing
-                          ? 'Update your login details.'
-                          : 'Your profile information.',
-                      style: const TextStyle(color: _muted, fontSize: 15),
-                    ),
-                    const SizedBox(height: 30),
-                    Form(
-                      key: _form,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _Field(
-                            controller: _name,
-                            label: 'Username',
-                            enabled: _editing,
-                            validator: (value) =>
-                                (value == null || value.trim().length < 2)
-                                ? 'Enter at least 2 characters.'
-                                : null,
-                          ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _editing
+                        ? 'Update your login details.'
+                        : 'Your profile information.',
+                    style: const TextStyle(color: _muted, fontSize: 15),
+                  ),
+                  const SizedBox(height: 30),
+                  Form(
+                    key: _form,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _Field(
+                          controller: _name,
+                          label: 'Username',
+                          enabled: _editing,
+                          validator: (value) =>
+                              (value == null || value.trim().length < 2)
+                              ? 'Enter at least 2 characters.'
+                              : null,
+                        ),
+                        const SizedBox(height: 18),
+                        _Field(
+                          controller: _email,
+                          label: 'Email address',
+                          enabled: _editing,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) =>
+                              (value == null ||
+                                  !value.contains('@') ||
+                                  !value.contains('.'))
+                              ? 'Enter a valid email address.'
+                              : null,
+                        ),
+                        if (_editing) ...[
                           const SizedBox(height: 18),
                           _Field(
-                            controller: _email,
-                            label: 'Email address',
-                            enabled: _editing,
-                            keyboardType: TextInputType.emailAddress,
+                            controller: _password,
+                            label: 'New password (optional)',
+                            obscure: true,
                             validator: (value) =>
-                                (value == null ||
-                                    !value.contains('@') ||
-                                    !value.contains('.'))
-                                ? 'Enter a valid email address.'
+                                (value != null &&
+                                    value.isNotEmpty &&
+                                    value.length < 6)
+                                ? 'Use at least 6 characters.'
                                 : null,
                           ),
-                          if (_editing) ...[
-                            const SizedBox(height: 18),
-                            _Field(
-                              controller: _password,
-                              label: 'New password (optional)',
-                              obscure: true,
-                              validator: (value) =>
-                                  (value != null &&
-                                      value.isNotEmpty &&
-                                      value.length < 6)
-                                  ? 'Use at least 6 characters.'
-                                  : null,
-                            ),
-                          ],
-                          if (_notice != null) ...[
-                            const SizedBox(height: 14),
-                            Text(
-                              _notice!,
-                              style: TextStyle(
-                                color: _notice!.contains('up to date')
-                                    ? const Color(0xff367258)
-                                    : _danger,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 26),
-                          if (_editing)
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _PrimaryButton(
-                                    label: 'Save changes',
-                                    icon: Icons.check_rounded,
-                                    onPressed: _save,
-                                    busy: _saving,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                OutlinedButton(
-                                  onPressed: () => setState(() {
-                                    _editing = false;
-                                    _name.text = widget.user.username;
-                                    _email.text = widget.user.email;
-                                    _password.clear();
-                                  }),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: _ink,
-                                    side: const BorderSide(color: _line),
-                                    minimumSize: const Size(52, 54),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  child: const Icon(Icons.close_rounded),
-                                ),
-                              ],
-                            )
-                          else
-                            _PrimaryButton(
-                              label: 'Edit account',
-                              icon: Icons.edit_outlined,
-                              onPressed: () => setState(() {
-                                _editing = true;
-                                _notice = null;
-                              }),
-                            ),
                         ],
-                      ),
+                        if (_notice != null) ...[
+                          const SizedBox(height: 14),
+                          Text(
+                            _notice!,
+                            style: TextStyle(
+                              color: _notice!.contains('up to date')
+                                  ? const Color(0xff367258)
+                                  : _danger,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 26),
+                        if (_editing)
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _PrimaryButton(
+                                  label: 'Save changes',
+                                  icon: Icons.check_rounded,
+                                  onPressed: _save,
+                                  busy: _saving,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              OutlinedButton(
+                                onPressed: () => setState(() {
+                                  _editing = false;
+                                  _name.text = widget.user.username;
+                                  _email.text = widget.user.email;
+                                  _password.clear();
+                                }),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: _ink,
+                                  side: const BorderSide(color: _line),
+                                  minimumSize: const Size(52, 54),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Icon(Icons.close_rounded),
+                              ),
+                            ],
+                          )
+                        else
+                          _PrimaryButton(
+                            label: 'Edit account',
+                            icon: Icons.edit_outlined,
+                            onPressed: () => setState(() {
+                              _editing = true;
+                              _notice = null;
+                            }),
+                          ),
+                      ],
                     ),
-                    const SizedBox(height: 22),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 22),
+                ],
               ),
             ),
           ),
@@ -864,308 +849,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 class _Brand extends StatelessWidget {
   const _Brand();
   @override
-  Widget build(BuildContext context) => Row(
-    mainAxisAlignment: MainAxisAlignment.start,
-    children: [
-      LiquidGlass(
-        radius: 10,
-        child: SizedBox(
-          width: 34,
-          height: 34,
-          child: Center(
-            child: Text(
-              'j',
-              style: const TextStyle(
-                color: _accent,
-                fontSize: 22,
-                height: 1,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ),
-      ),
-      const SizedBox(width: 10),
-      const Text(
-        'jsp',
-        style: TextStyle(
-          color: _ink,
-          fontSize: 22,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -1,
-        ),
-      ),
-    ],
+  Widget build(BuildContext context) => const Text(
+    'MAXX',
+    style: TextStyle(
+      color: _ink,
+      fontSize: 23,
+      fontWeight: FontWeight.w700,
+      letterSpacing: -1,
+    ),
   );
-}
-
-class LiquidStage extends StatelessWidget {
-  const LiquidStage({super.key, required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => Stack(
-    fit: StackFit.expand,
-    children: [
-      const Positioned.fill(child: CustomPaint(painter: _AtmospherePainter())),
-      child,
-    ],
-  );
-}
-
-class _AtmospherePainter extends CustomPainter {
-  const _AtmospherePainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final bounds = Offset.zero & size;
-    canvas.drawColor(const Color(0xff090e21), BlendMode.src);
-
-    // A luminous navigation field keeps the center legible while color gathers
-    // toward the edges like a lit instrument chamber.
-    canvas.drawRect(
-      bounds,
-      Paint()
-        ..shader = ui.Gradient.radial(
-          Offset(size.width * .5, size.height * .48),
-          size.height * .67,
-          [
-            const Color(0xffedf1fb),
-            const Color(0xffdce4f5),
-            const Color(0xff6178bd).withValues(alpha: .84),
-            const Color(0xff17234a).withValues(alpha: .38),
-          ],
-          const [0, .58, .88, 1],
-        ),
-    );
-    canvas.drawRect(
-      bounds,
-      Paint()
-        ..shader = ui.Gradient.radial(
-          Offset(size.width * .96, size.height * .06),
-          size.width * .62,
-          [const Color(0xff12c9ee).withValues(alpha: .72), Colors.transparent],
-        ),
-    );
-    canvas.drawRect(
-      bounds,
-      Paint()
-        ..shader = ui.Gradient.radial(
-          Offset(size.width * .02, size.height * .91),
-          size.width * .72,
-          [const Color(0xff8056ef).withValues(alpha: .58), Colors.transparent],
-        ),
-    );
-
-    // Instrument-grid arcs and orbital tracks frame the quiet form area.
-    final track = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..strokeWidth = 1.4
-      ..color = const Color(0xff455a9c).withValues(alpha: .58);
-    final fineTrack = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = .7
-      ..strokeWidth = 1
-      ..color = const Color(0xff16aeca).withValues(alpha: .62);
-    final upperOrbit = Rect.fromCenter(
-      center: Offset(size.width * 1.02, size.height * .10),
-      width: size.width * .74,
-      height: size.width * .74,
-    );
-    canvas.drawArc(upperOrbit, 2.05, 1.45, false, track);
-    canvas.drawArc(upperOrbit.deflate(15), 2.08, 1.39, false, fineTrack);
-    canvas.drawArc(upperOrbit.deflate(31), 2.12, 1.32, false, track);
-
-    final lowerOrbit = Rect.fromCenter(
-      center: Offset(size.width * -.10, size.height * .90),
-      width: size.width * .58,
-      height: size.width * .58,
-    );
-    canvas.drawArc(lowerOrbit, 5.12, 1.30, false, track);
-    canvas.drawArc(lowerOrbit.deflate(14), 5.18, 1.22, false, fineTrack);
-
-    final gridPaint = Paint()
-      ..color = const Color(0xff334983).withValues(alpha: .26)
-      ..strokeWidth = .8;
-    final gridOrigin = Offset(size.width * .86, size.height * .17);
-    for (var i = 0; i < 5; i++) {
-      final x = gridOrigin.dx + i * 14.0;
-      final y = gridOrigin.dy + i * 14.0;
-      canvas.drawLine(
-        Offset(x, gridOrigin.dy),
-        Offset(x, gridOrigin.dy + 56),
-        gridPaint,
-      );
-      canvas.drawLine(
-        Offset(gridOrigin.dx, y),
-        Offset(gridOrigin.dx + 56, y),
-        gridPaint,
-      );
-    }
-
-    final nodePaint = Paint()
-      ..color = const Color(0xff04b8d9).withValues(alpha: .92);
-    for (final point in [
-      Offset(size.width * .79, size.height * .10),
-      Offset(size.width * .92, size.height * .20),
-      Offset(size.width * .11, size.height * .84),
-    ]) {
-      canvas.drawCircle(point, 3, nodePaint);
-      canvas.drawCircle(
-        point,
-        6,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = .7
-          ..color = const Color(0xff22b9d8).withValues(alpha: .32),
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _AtmospherePainter oldDelegate) => false;
-}
-
-class LiquidGlass extends StatefulWidget {
-  const LiquidGlass({super.key, required this.child, this.radius = 16});
-
-  final Widget child;
-  final double radius;
-
-  static final Future<ui.FragmentProgram> _program =
-      ui.FragmentProgram.fromAsset('shaders/liquid_glass.frag');
-
-  @override
-  State<LiquidGlass> createState() => _LiquidGlassState();
-}
-
-class _LiquidGlassState extends State<LiquidGlass> {
-  ui.FragmentShader? _shader;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadShader();
-  }
-
-  Future<void> _loadShader() async {
-    if (!ui.ImageFilter.isShaderFilterSupported) return;
-    try {
-      final program = await LiquidGlass._program;
-      final shader = program.fragmentShader();
-      shader.setFloat(2, 4.5);
-      shader.setFloat(3, 0.65);
-      if (!mounted) {
-        shader.dispose();
-        return;
-      }
-      setState(() => _shader = shader);
-    } catch (_) {
-      // Keep the light refraction fallback on unsupported rendering backends.
-    }
-  }
-
-  @override
-  void dispose() {
-    _shader?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final shader = _shader;
-    final filter = shader == null
-        ? ui.ImageFilter.blur(sigmaX: 1.2, sigmaY: 1.2)
-        : ui.ImageFilter.shader(shader);
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(widget.radius),
-      child: Stack(
-        fit: StackFit.passthrough,
-        children: [
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: filter,
-              child: const SizedBox.expand(),
-            ),
-          ),
-          CustomPaint(
-            painter: _LiquidEdgePainter(radius: widget.radius),
-            child: widget.child,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LiquidEdgePainter extends CustomPainter {
-  const _LiquidEdgePainter({required this.radius});
-  final double radius;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    final shape = RRect.fromRectAndRadius(rect, Radius.circular(radius));
-
-    canvas.drawRRect(
-      shape,
-      Paint()..color = const Color(0xfff7f9ff).withValues(alpha: .18),
-    );
-    canvas.drawRRect(
-      shape,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1
-        ..color = Colors.white.withValues(alpha: .72),
-    );
-
-    final highlight = Path()
-      ..moveTo(radius, 1)
-      ..cubicTo(
-        size.width * .28,
-        1,
-        size.width * .5,
-        1.5,
-        size.width * .72,
-        2.2,
-      );
-    canvas.drawPath(
-      highlight,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
-        ..shader = ui.Gradient.linear(
-          Offset(radius, 1),
-          Offset(size.width * .78, 2),
-          [
-            Colors.white.withValues(alpha: .9),
-            Colors.white.withValues(alpha: .08),
-          ],
-        ),
-    );
-
-    final lowerEdge = Path()
-      ..moveTo(radius, size.height - 1)
-      ..quadraticBezierTo(
-        size.width * .5,
-        size.height + .5,
-        size.width - radius,
-        size.height - 1,
-      );
-    canvas.drawPath(
-      lowerEdge,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1
-        ..color = const Color(0xff586783).withValues(alpha: .22),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _LiquidEdgePainter oldDelegate) =>
-      oldDelegate.radius != radius;
 }
 
 class _Field extends StatelessWidget {
@@ -1177,6 +869,7 @@ class _Field extends StatelessWidget {
     this.obscure = false,
     this.suffix,
     this.enabled = true,
+    this.onChanged,
   });
   final TextEditingController controller;
   final String label;
@@ -1184,9 +877,11 @@ class _Field extends StatelessWidget {
   final TextInputType? keyboardType;
   final bool obscure, enabled;
   final Widget? suffix;
+  final ValueChanged<String>? onChanged;
   @override
   Widget build(BuildContext context) => TextFormField(
     controller: controller,
+    onChanged: onChanged,
     validator: validator,
     keyboardType: keyboardType,
     obscureText: obscure,
@@ -1239,46 +934,44 @@ class _PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    child: LiquidGlass(
-      radius: 14,
-      child: SizedBox(
-        height: 56,
-        width: double.infinity,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: busy ? null : onPressed,
-            borderRadius: BorderRadius.circular(14),
-            child: Center(
-              child: busy
-                  ? const SizedBox(
-                      width: 19,
-                      height: 19,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: _accent,
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          label,
-                          style: const TextStyle(
-                            color: _ink,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        if (icon != null) ...[
-                          const SizedBox(width: 8),
-                          Icon(icon, size: 18, color: _accent),
-                        ],
-                      ],
-                    ),
-            ),
+    child: SizedBox(
+      height: 54,
+      width: double.infinity,
+      child: FilledButton(
+        onPressed: busy ? null : onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: _accent,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: _accent.withValues(alpha: .65),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
+        child: busy
+            ? const SizedBox(
+                width: 19,
+                height: 19,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (icon != null) ...[
+                    const SizedBox(width: 8),
+                    Icon(icon, size: 18),
+                  ],
+                ],
+              ),
       ),
     ),
   );

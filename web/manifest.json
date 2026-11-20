@@ -1,11 +1,11 @@
 {
-    "name": "jsp",
-    "short_name": "jsp",
+    "name": "MAXX",
+    "short_name": "MAXX",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#f1f4f7",
+    "theme_color": "#f1f4f7",
+    "description": "MAXX — your circle, one place.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
